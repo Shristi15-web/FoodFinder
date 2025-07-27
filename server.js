@@ -26,10 +26,10 @@ mongoose.connect(MONGO_URI, {
 });
 mongoose.connection.once('open', () => console.log('✅ MongoDB connected'));
 
-// ⚠️ Serve static files from ../public *without allowing index.html to override*
+// Serve static files from ../public (excluding index.html override)
 app.use(express.static(path.join(__dirname, '../public'), { index: false }));
 
-// ✅ Force root route to serve land.html
+// Root route → land.html
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../public', 'land.html'));
 });
@@ -51,7 +51,10 @@ app.post('/api/signup', async (req, res) => {
 
     if (userType === 'vendor') {
       const { stallName, foodType, foodItem, city, location, phone } = req.body;
-      const vendor = new Vendor({ fullName, email, password: hashed, userType, stallName, foodType, foodItem, city, location, phone });
+      const vendor = new Vendor({
+        fullName, email, password: hashed, userType,
+        stallName, foodType, foodItem, city, location, phone
+      });
       await vendor.save();
       return res.json({ message: 'Vendor registered successfully', redirect: '/vendordash.html' });
     } else {
@@ -92,7 +95,6 @@ app.post('/api/login', async (req, res) => {
       { expiresIn: '2h' }
     );
 
-    // ✅ Correct response
     res.json({ token, userType, fullName: user.fullName, redirect: redirectTo });
 
   } catch (err) {
@@ -101,6 +103,7 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
+// Logout route
 app.get('/logout', (req, res) => {
   res.sendFile(path.join(__dirname, '../public', 'land.html'));
 });
@@ -109,7 +112,6 @@ app.get('/logout', (req, res) => {
 app.use((req, res) => {
   res.status(404).send('404: Page Not Found');
 });
-
 
 // Start server
 const PORT = process.env.PORT || 5000;
